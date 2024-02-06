@@ -21,9 +21,17 @@ contract Voting {
     }
 
     Proposal[] public s_proposals;
+    uint256 MINIMUM_VOTING_THRESHOLD = 10;
+
+    /// a mapping of already voted voters
     mapping(address => bool) public s_voters;
+    /// a mapping from the voter's address to what vote they
+    /// casted (true/fasle)
     mapping(address => bool) public s_votersVote;
+    /// a mapping of allowed voters
     mapping(address => bool) public s_allowedVoters;
+    /// a mapping of already executed proposal
+    mapping(uint256 => bool) public s_executedProposal;
 
     function newProposal(address _targetAddress, bytes calldata _data) external validateVoter {
         Proposal memory newlyCreatedProposal = Proposal({target: _targetAddress, data: _data, yesCount: 0, noCount: 0});
@@ -56,8 +64,19 @@ contract Voting {
                 s_votersVote[msg.sender] = _voteForProposal;
             }
         }
-
+        if (s_proposals[_proposalId].yesCount == MINIMUM_VOTING_THRESHOLD) {
+            executeProposal(_proposalId, s_proposals[_proposalId].target, s_proposals[_proposalId].data);
+        }
         emit Voting_VoteCast(_proposalId, msg.sender);
+    }
+
+    function executeProposal(uint256 proposalId, address _targetProposal, bytes memory _data) internal returns (bool) {
+        require(!s_executedProposal[proposalId], "Proposal already executed");
+        (bool success,) = _targetProposal.call(_data);
+        if (success) {
+            s_executedProposal[proposalId] = success;
+        }
+        return success;
     }
 
     modifier validateVoter() {

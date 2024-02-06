@@ -12,14 +12,13 @@ contract VotingTest is Test {
     Voting public votingContract;
     Account PROTOCOL_ADDRESS = makeAccount("Protocol");
     address user1;
-    address user2 ;
-    
+    address user2;
 
     function setUp() public {
-         user1 = makeAddr("user1");
+        user1 = makeAddr("user1");
         user2 = makeAddr("user2");
 
-        address [] memory voters = new address[](2);
+        address[] memory voters = new address[](2);
         voters[0] = user1;
         voters[1] = user2;
         votingContract = new Voting(voters);
@@ -60,7 +59,6 @@ contract VotingTest is Test {
 
         vm.stopPrank();
 
-
         vm.prank(user2);
         votingContract.castVote(0, true);
         vm.prank(user1);
@@ -88,15 +86,13 @@ contract VotingTest is Test {
     //     votingContract.castVote(0, true);
     // }
 
-
-      function  test_preventSybilAttack() external {
+    function test_preventSybilAttack() external {
         address jerry = makeAddr("jerry");
         vm.expectRevert();
         vm.prank(jerry);
-        votingContract.newProposal(PROTOCOL_ADDRESS.addr, abi.encodeWithSignature("add(uint)",1));
-         vm.expectRevert();
+        votingContract.newProposal(PROTOCOL_ADDRESS.addr, abi.encodeWithSignature("add(uint)", 1));
+        vm.expectRevert();
         vm.prank(jerry);
         votingContract.castVote(0, true);
-      }
-
+    }
 }
